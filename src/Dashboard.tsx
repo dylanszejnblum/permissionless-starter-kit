@@ -81,16 +81,16 @@ const Dashboard = () => {
               <CardHeader>
                 <CardTitle>Faucet</CardTitle>
                 <CardDescription>
-                  You are currently connected to Sepolia Testnet for test ETH
-                  and tokens please refer to the following faucet
+                  You are currently connected to Polygon Mumbai Testnet for
+                  testnet matic and tokens please refer to the following faucet
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col space-y-2">
-                <a href="https://sepoliafaucet.com/">
+                <a href="https://mumbaifaucet.com/">
                   <Button variant="outline">Alchemy Faucet</Button>
                 </a>
-                <a href="https://www.infura.io/faucet/sepolia">
-                  <Button variant="outline"> Infura Faucet</Button>
+                <a href="https://faucet.polygon.technology/">
+                  <Button variant="outline"> Polygon Faucet</Button>
                 </a>
               </CardContent>
             </Card>
