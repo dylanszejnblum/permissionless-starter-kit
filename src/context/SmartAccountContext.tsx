@@ -3,6 +3,7 @@ import {
   walletClientToCustomSigner,
 } from "permissionless";
 import {
+  SmartAccountSigner,
   signerToBiconomySmartAccount,
   signerToEcdsaKernelSmartAccount,
   signerToSafeSmartAccount,
@@ -55,7 +56,11 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   const { data: walletClient } = useWalletClient();
   const [privateKey, setPrivateKey] = useState<string>("");
   const [Eoa, setEoa] = useState<string>("");
-  const [account, setAccount] = useState();
+  const [account, setAccount] = useState<SmartAccountSigner<
+    "privateKey" | "custom",
+    `0x${string}`
+  > | null>(null);
+
   const [smartAddress, setSmartAddress] = useState("");
   const [selectedAccount, setSelectedAccount] = useState("");
   const [kernelAccountAddress, setKernelAccountAddress] = useState("");
@@ -96,8 +101,8 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   useEffect(() => {
     if (walletClient) {
       // If walletClient is available and has an account, update the account state
-      const customSigner = walletClientToCustomSigner(walletClient);
-
+      const customSigner: SmartAccountSigner<"custom"> =
+        walletClientToCustomSigner(walletClient);
       setAccount(customSigner);
     } else {
       // Handle the scenario where walletClient or walletClient.account is not available
@@ -109,7 +114,9 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
     const ownerPrivateKey = generatePrivateKey();
     setPrivateKey(ownerPrivateKey);
     const account = privateKeyToAccount(ownerPrivateKey);
-    setAccount(account);
+    // Cast account to the expected type
+    const customAccount = account as unknown as SmartAccountSigner<"custom">;
+    setAccount(customAccount);
     setEoa(account.address);
   };
 
@@ -124,7 +131,10 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   const createSimpleAccount = async () => {
     const simpleAccount = await signerToSimpleSmartAccount(publicClient, {
       entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-      signer: account,
+      signer: account as SmartAccountSigner<
+        "privateKey" | "custom",
+        `0x${string}`
+      >,
       factoryAddress: "0x9406Cc6185a346906296840746125a0E44976454",
     });
     console.log(simpleAccount);
@@ -148,7 +158,10 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   const createKernelAccount = async () => {
     const kernelAccount = await signerToEcdsaKernelSmartAccount(publicClient, {
       entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-      signer: account,
+      signer: account as SmartAccountSigner<
+        "privateKey" | "custom",
+        `0x${string}`
+      >,
       index: 0n,
     });
 
@@ -171,7 +184,10 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   };
   const createSafeAccount = async () => {
     const safeAccount = await signerToSafeSmartAccount(publicClient, {
-      signer: account,
+      signer: account as SmartAccountSigner<
+        "privateKey" | "custom",
+        `0x${string}`
+      >,
       safeVersion: "1.4.1",
       entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", // global entrypoint
       saltNonce: 0n, // optional
@@ -198,7 +214,10 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
     try {
       const biconomyAccount = await signerToBiconomySmartAccount(publicClient, {
         entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
-        signer: account,
+        signer: account as SmartAccountSigner<
+          "privateKey" | "custom",
+          `0x${string}`
+        >,
       });
 
       setKernelAccountAddress(biconomyAccount.address);
@@ -225,8 +244,9 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   const getSmartAccountBalance = async () => {
     try {
       const balance = await publicClient.getBalance({
-        address: smartAddress,
+        address: smartAddress as `0x${string}`,
       });
+
       setBalance(formatEther(balance));
     } catch (error) {
       console.error("Failed to parse data or send transaction:", error);

@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +26,6 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { QrCodeIcon, CopyIcon } from "lucide-react";
 import { useSmartAccountContext } from "@/context/SmartAccountContext";
 import { QRCodeSVG } from "qrcode.react";
-import { Label } from "@radix-ui/react-dropdown-menu";
 
 const QrCodeModal = () => {
   const [open, setOpen] = React.useState(false);
@@ -83,7 +81,12 @@ function QrCodeCard({ className }: React.ComponentProps<"form">) {
   return (
     <Card>
       <CardContent>
-        <QRCodeSVG className="w-full h-full mt-5" value={smartAddress} />
+        <QRCodeSVG
+          className="w-full h-full mt-5"
+          fgColor="#a855f7"
+          bgColor="#faf5ff"
+          value={smartAddress}
+        />
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center mb-5 w-full space-y-4">
         <span className="font-bold text-xl text-purple-500">

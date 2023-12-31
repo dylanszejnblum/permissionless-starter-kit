@@ -106,6 +106,8 @@ function TransactionForm({ className }: React.ComponentProps<"form">) {
           value: parseEther(amount).toString(),
         }),
       );
+      setAmount("");
+      setAddress("");
     } catch (error) {
       // Handle any errors here
       console.error(error);
