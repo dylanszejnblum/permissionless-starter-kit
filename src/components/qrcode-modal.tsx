@@ -75,7 +75,7 @@ const QrCodeModal = () => {
   );
 };
 
-function QrCodeCard({ className }: React.ComponentProps<"form">) {
+function QrCodeCard({}: React.ComponentProps<"form">) {
   // Handle change in the address input
   const { smartAddress, selectedAccount } = useSmartAccountContext();
   return (

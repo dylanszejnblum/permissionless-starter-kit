@@ -20,7 +20,7 @@ const Dashboard = () => {
     Eoa,
     privateKey,
     createKernelAccount,
-    sendUserOp,
+
     selectedAccount,
     importPrivateKeyToAccount,
     createSimpleAccount,

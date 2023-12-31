@@ -45,5 +45,5 @@ Start the server
 - ~~Added modal for sending ETH and Account QR~~ ✅
 - Launch Next.js Permissionless Kit
 - Add support for web3auth
-- Fix Typescript types
+- ~~Fix Typescript types~~ ✅
 - Passkeys support
