@@ -1,12 +1,11 @@
-export type SiteConfig = typeof siteConfig
+export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Starter KIT",
-  description:
-    "",
+  name: "",
+  description: "",
   mainNav: [
     {
-      title: "Playground",
+      title: "",
       href: "/",
     },
   ],
@@ -16,4 +15,4 @@ export const siteConfig = {
       "https://github.com/dylanszejnblum/wagmi-Permissionless-starter-kit",
     docs: "https://docs.pimlico.io/permissionless",
   },
-}
+};

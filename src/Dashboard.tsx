@@ -1,18 +1,19 @@
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { useSmartAccountContext } from "@/context/SmartAccountContext"
-import { useState } from "react"
-import { parseEther } from "viem"
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { useSmartAccountContext } from "@/context/SmartAccountContext";
+import { useState } from "react";
 
+import SendTransactionButton from "@/components/send-transaction-modal";
+import QrCodeModal from "@/components/qrcode-modal";
 const Dashboard = () => {
-  const [localPrivateKey, setLocalPrivateKey] = useState<string>("")
+  const [localPrivateKey, setLocalPrivateKey] = useState<string>("");
   const {
     generatePrivateKeys,
     smartAddress,
@@ -26,12 +27,12 @@ const Dashboard = () => {
     createSafeAccount,
     getSmartAccountBalance,
     balance,
-    mintErc721,
-  } = useSmartAccountContext()
+    createBiconomyAccount,
+  } = useSmartAccountContext();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLocalPrivateKey(e.target.value)
-  }
+    setLocalPrivateKey(e.target.value);
+  };
   return (
     <>
       <div className=" flex-col md:flex">
@@ -40,7 +41,7 @@ const Dashboard = () => {
             <h2 className="text-3xl font-bold tracking-tight">Playground</h2>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+          <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-7">
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Eoa Setup</CardTitle>
@@ -49,7 +50,7 @@ const Dashboard = () => {
                 <div className="flex flex-col space-y-2">
                   <Button
                     onClick={() => {
-                      generatePrivateKeys()
+                      generatePrivateKeys();
                     }}
                   >
                     Generate Private Key
@@ -68,7 +69,7 @@ const Dashboard = () => {
                   />
                   <Button
                     onClick={() => {
-                      importPrivateKeyToAccount(localPrivateKey)
+                      importPrivateKeyToAccount(localPrivateKey);
                     }}
                   >
                     Set custom Private key
@@ -94,7 +95,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6">
+          <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-6">
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Smart Account Client</CardTitle>
@@ -113,7 +114,7 @@ const Dashboard = () => {
                 </span>
                 <Button
                   onClick={() => {
-                    createSimpleAccount()
+                    createSimpleAccount();
                   }}
                 >
                   Simple Account
@@ -121,21 +122,26 @@ const Dashboard = () => {
                 <Button
                   className="bg-blue-500"
                   onClick={() => {
-                    createKernelAccount()
+                    createKernelAccount();
                   }}
                 >
                   Kernel Account
                 </Button>
                 <Button
                   onClick={() => {
-                    createSafeAccount()
+                    createSafeAccount();
                   }}
                   className="bg-green-500"
                 >
                   Safe Account
                 </Button>
-                <Button disabled={true} className="bg-red-500">
-                  Biconomy Account (Coming soon)
+                <Button
+                  onClick={() => {
+                    createBiconomyAccount();
+                  }}
+                  className="bg-red-500"
+                >
+                  Biconomy Account
                 </Button>
               </CardContent>
             </Card>
@@ -156,28 +162,14 @@ const Dashboard = () => {
 
                 <Button
                   onClick={() => {
-                    getSmartAccountBalance()
+                    getSmartAccountBalance();
                   }}
                 >
                   Get Balance
                 </Button>
+                <QrCodeModal />
 
-                <Button
-                  onClick={() => {
-                    sendUserOp(
-                      JSON.stringify({
-                        to: "0x9e51BB5169931ee745d44F01168172c80678B628",
-                        value: parseEther("0.05").toString(),
-                      }),
-                    )
-                  }}
-                >
-                  Send dummy userOP
-                </Button>
-                <Button disabled={true} onClick={() => {}}>
-                  {" "}
-                  Mint test ERC-721
-                </Button>
+                <SendTransactionButton />
               </CardContent>
             </Card>
           </div>
@@ -185,7 +177,7 @@ const Dashboard = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

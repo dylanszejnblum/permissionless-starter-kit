@@ -1,9 +1,10 @@
-import { Icons } from "@/components/icons"
-import { MainNav } from "@/components/main-nav"
-import { ModeToggle } from "@/components/mode-toggle"
-import { buttonVariants } from "@/components/ui/button"
-import { siteConfig } from "@/config/site"
-import { Link } from "react-router-dom"
+import { Icons } from "@/components/icons";
+import { MainNav } from "@/components/main-nav";
+import { ModeToggle } from "@/components/mode-toggle";
+import { buttonVariants } from "@/components/ui/button";
+import ConnectButton from "@/components/ConnectButton";
+import { siteConfig } from "@/config/site";
+import { Link } from "react-router-dom";
 
 export function SiteHeader() {
   return (
@@ -11,6 +12,7 @@ export function SiteHeader() {
       <div className="container flex h-16 items-center space-x-4 sm:justify-between sm:space-x-0">
         <MainNav items={siteConfig.mainNav} />
         <div className="flex flex-1 items-center justify-end space-x-4">
+          <ConnectButton />
           <nav className="flex items-center space-x-1">
             <Link to={siteConfig.links.github} target="_blank" rel="noreferrer">
               <div
@@ -38,10 +40,11 @@ export function SiteHeader() {
                 <span className="sr-only">Twitter</span>
               </div>
             </Link>
+
             <ModeToggle />
           </nav>
         </div>
       </div>
     </header>
-  )
+  );
 }

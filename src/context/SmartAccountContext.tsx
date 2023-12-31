@@ -1,23 +1,23 @@
-import ABI from "@/utils/721Abi.json"
-import { createSmartAccountClient } from "permissionless"
 import {
-  privateKeyToSafeSmartAccount,
-  privateKeyToSimpleSmartAccount,
+  createSmartAccountClient,
+  walletClientToCustomSigner,
+} from "permissionless";
+import {
+  signerToBiconomySmartAccount,
   signerToEcdsaKernelSmartAccount,
-} from "permissionless/accounts"
+  signerToSafeSmartAccount,
+  signerToSimpleSmartAccount,
+} from "permissionless/accounts";
 import {
   createPimlicoBundlerClient,
   createPimlicoPaymasterClient,
-} from "permissionless/clients/pimlico"
-import React, { ReactNode, useContext, useState } from "react"
-import {
-  createPublicClient,
-  formatEther,
-  http,
-  PrivateKeyAccount,
-} from "viem"
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts"
-import { sepolia } from "viem/chains"
+} from "permissionless/clients/pimlico";
+import React, { ReactNode, useContext, useState, useEffect } from "react";
+import { createPublicClient, formatEther, http } from "viem";
+import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { polygonMumbai } from "viem/chains";
+import { useWalletClient } from "wagmi";
+import { toast } from "sonner";
 
 // Context
 export const SmartAccountContext = React.createContext({
@@ -32,169 +32,231 @@ export const SmartAccountContext = React.createContext({
   createSimpleAccount: async () => {},
   createKernelAccount: async () => {},
   createSafeAccount: async () => {},
+  createBiconomyAccount: async () => {},
   getSmartAccountBalance: async () => {},
   mintErc721: async () => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   importPrivateKeyToAccount: async (_importedPrivateKey: string) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   sendUserOp: async (_data: string) => {},
-})
+});
 
 // Provider Props Type
 interface SmartAccountProviderProps {
-  children: ReactNode
+  children: ReactNode;
 }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SmartAccountClientType = any
+type SmartAccountClientType = any;
 
 // Provider
 export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
   children,
 }) => {
-  const [privateKey, setPrivateKey] = useState<string>("")
-  const [Eoa, setEoa] = useState<string>("")
-  const [account, setAccount] = useState<PrivateKeyAccount>()
-  const [smartAddress, setSmartAddress] = useState("")
-  const [selectedAccount, setSelectedAccount] = useState("")
-  const [kernelAccountAddress, setKernelAccountAddress] = useState("")
+  const { data: walletClient } = useWalletClient();
+  const [privateKey, setPrivateKey] = useState<string>("");
+  const [Eoa, setEoa] = useState<string>("");
+  const [account, setAccount] = useState();
+  const [smartAddress, setSmartAddress] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState("");
+  const [kernelAccountAddress, setKernelAccountAddress] = useState("");
   const [smartAccountClient, setSmartAccountClient] =
-    useState<SmartAccountClientType | null>(null)
-  const [balance, setBalance] = useState("")
+    useState<SmartAccountClientType | null>(null);
+  const [balance, setBalance] = useState("");
 
   const paymasterClient = createPimlicoPaymasterClient({
     transport: http(
-      `https://api.pimlico.io/v2/sepolia/rpc?apikey=YOUR-API-KEY`,
+      `https://api.pimlico.io/v2/mumbai/rpc?apikey=${
+        import.meta.env.VITE_PIMLICO_API_KEY
+      }`,
     ),
-  })
+  });
 
   const bundlerClient = createPimlicoBundlerClient({
     transport: http(
-      `https://api.pimlico.io/v1/sepolia/rpc?apikey=YOUR-API-KEY`,
+      `https://api.pimlico.io/v1/mumbai/rpc?apikey=${
+        import.meta.env.VITE_PIMLICO_API_KEY
+      }`,
     ),
-  })
+  });
 
   const publicClient = createPublicClient({
     transport: http(
-      "YOUR-ALCHEMY-CLIENT-URL",
+      `https://polygon-mumbai.g.alchemy.com/v2/${
+        import.meta.env.VITE_ALCHEMY_API_KEY
+      }`,
     ),
-  })
+  });
 
+  useEffect(() => {
+    // Set Eoa to walletClient.account.address or a default value
+    const address = walletClient?.account?.address || "";
+    setEoa(address);
+  }, [walletClient]);
+
+  useEffect(() => {
+    if (walletClient) {
+      // If walletClient is available and has an account, update the account state
+      const customSigner = walletClientToCustomSigner(walletClient);
+
+      setAccount(customSigner);
+    } else {
+      // Handle the scenario where walletClient or walletClient.account is not available
+      // This could be setting the account to null or some other appropriate action
+      setAccount(null);
+    }
+  }, [walletClient]); // The effect depends on walletClient
   const generatePrivateKeys = async () => {
-    const ownerPrivateKey = generatePrivateKey()
-    setPrivateKey(ownerPrivateKey)
-    const account = privateKeyToAccount(ownerPrivateKey)
-    setAccount(account)
-    setEoa(account.address)
-  }
+    const ownerPrivateKey = generatePrivateKey();
+    setPrivateKey(ownerPrivateKey);
+    const account = privateKeyToAccount(ownerPrivateKey);
+    setAccount(account);
+    setEoa(account.address);
+  };
 
   const importPrivateKeyToAccount = async (importedPrivateKey: string) => {
-    const formattedPrivateKey = `${importedPrivateKey}` as `0x${string}`
-    setPrivateKey(formattedPrivateKey)
-    const account = privateKeyToAccount(formattedPrivateKey)
-    setAccount(account)
-    setEoa(account.address)
-  }
+    const formattedPrivateKey = `${importedPrivateKey}` as `0x${string}`;
+    setPrivateKey(formattedPrivateKey);
+    const account = privateKeyToAccount(formattedPrivateKey);
+    setAccount(account);
+    setEoa(account.address);
+  };
 
   const createSimpleAccount = async () => {
-    const simpleAccount = await privateKeyToSimpleSmartAccount(publicClient, {
-      privateKey: privateKey,
+    const simpleAccount = await signerToSimpleSmartAccount(publicClient, {
+      entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+      signer: account,
       factoryAddress: "0x9406Cc6185a346906296840746125a0E44976454",
-      entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", // global entrypoint
-    })
-
-    setKernelAccountAddress(simpleAccount.address)
-    setSelectedAccount("Simple Account")
+    });
+    console.log(simpleAccount);
+    setKernelAccountAddress(simpleAccount.address);
+    setSelectedAccount("Simple Account");
 
     const smartAccountClient = createSmartAccountClient({
       account: simpleAccount,
-      chain: sepolia,
+      chain: polygonMumbai,
       transport: http(
-        `https://api.pimlico.io/v1/sepolia/rpc?apikey=YOUR-API-KEY`,
+        `https://api.pimlico.io/v1/mumbai/rpc?apikey=${
+          import.meta.env.VITE_PIMLICO_API_KEY
+        }`,
       ),
       sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
-    })
+    });
 
-    setSmartAccountClient(smartAccountClient)
-    setSmartAddress(simpleAccount.address)
-  }
+    setSmartAccountClient(smartAccountClient);
+    setSmartAddress(simpleAccount.address);
+  };
   const createKernelAccount = async () => {
     const kernelAccount = await signerToEcdsaKernelSmartAccount(publicClient, {
       entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
       signer: account,
       index: 0n,
-    })
+    });
 
-    setKernelAccountAddress(kernelAccount.address)
-    setSelectedAccount("Kernel Account")
+    setKernelAccountAddress(kernelAccount.address);
+    setSelectedAccount("Kernel Account");
 
     const smartAccountClient = createSmartAccountClient({
       account: kernelAccount,
-      chain: sepolia,
+      chain: polygonMumbai,
       transport: http(
-        `https://api.pimlico.io/v1/sepolia/rpc?apikey=YOUR-API-KEY`,
+        `https://api.pimlico.io/v1/mumbai/rpc?apikey=${
+          import.meta.env.VITE_PIMLICO_API_KEY
+        }`,
       ),
       sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
-    })
+    });
 
-    setSmartAccountClient(smartAccountClient)
-    setSmartAddress(kernelAccount.address)
-  }
+    setSmartAccountClient(smartAccountClient);
+    setSmartAddress(kernelAccount.address);
+  };
   const createSafeAccount = async () => {
-    const safeAccount = await privateKeyToSafeSmartAccount(publicClient, {
-      privateKey: privateKey,
+    const safeAccount = await signerToSafeSmartAccount(publicClient, {
+      signer: account,
       safeVersion: "1.4.1",
       entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789", // global entrypoint
       saltNonce: 0n, // optional
-    })
+    });
 
-    setSelectedAccount("Safe Account")
+    setSelectedAccount("Safe Account");
 
     const smartAccountClient = createSmartAccountClient({
       account: safeAccount,
-      chain: sepolia,
+      chain: polygonMumbai,
       transport: http(
-        `https://api.pimlico.io/v1/sepolia/rpc?apikey=YOUR-API-KEY`,
+        `https://api.pimlico.io/v1/mumbai/rpc?apikey=${
+          import.meta.env.VITE_PIMLICO_API_KEY
+        }`,
       ),
       sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
-    })
+    });
 
-    setSmartAccountClient(smartAccountClient)
-    setSmartAddress(safeAccount.address)
-  }
+    setSmartAccountClient(smartAccountClient);
+    setSmartAddress(safeAccount.address);
+  };
+
+  const createBiconomyAccount = async () => {
+    try {
+      const biconomyAccount = await signerToBiconomySmartAccount(publicClient, {
+        entryPoint: "0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
+        signer: account,
+      });
+
+      setKernelAccountAddress(biconomyAccount.address);
+      setSelectedAccount("Biconomy Account");
+
+      const smartAccountClient = createSmartAccountClient({
+        account: biconomyAccount,
+        chain: polygonMumbai,
+        transport: http(
+          `https://api.pimlico.io/v1/mumbai/rpc?apikey=${
+            import.meta.env.VITE_PIMLICO_API_KEY
+          }`,
+        ),
+        sponsorUserOperation: paymasterClient.sponsorUserOperation, // optional
+      });
+
+      setSmartAccountClient(smartAccountClient);
+      setSmartAddress(biconomyAccount.address);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const getSmartAccountBalance = async () => {
     try {
       const balance = await publicClient.getBalance({
         address: smartAddress,
-      })
-      setBalance(formatEther(balance))
+      });
+      setBalance(formatEther(balance));
     } catch (error) {
-      console.error("Failed to parse data or send transaction:", error)
+      console.error("Failed to parse data or send transaction:", error);
     }
-  }
+  };
 
   const mintErc721 = async () => {
     try {
-      console.log("not working yet")
+      console.log("not working yet");
     } catch (error) {
-      console.error("Failed to parse data or send transaction:", error)
+      console.error("Failed to parse data or send transaction:", error);
     }
-  }
+  };
 
   const sendUserOp = async (data: string) => {
     try {
-      const gasPrices = await bundlerClient.getUserOperationGasPrice()
-      const formatedData = JSON.parse(data)
+      const gasPrices = await bundlerClient.getUserOperationGasPrice();
+      const formatedData = JSON.parse(data);
+      console.log(gasPrices.fast.maxFeePerGas);
       const tx = await smartAccountClient.sendTransaction({
         ...formatedData, // Include all properties from 'data'
         maxFeePerGas: gasPrices.fast.maxFeePerGas, // if using Pimlico
         maxPriorityFeePerGas: gasPrices.fast.maxPriorityFeePerGas, // if using Pimlico
-      })
-      console.log("Transaction sent successfully:", tx)
+      });
+      console.log("Transaction sent successfully:", tx);
+      toast("Transaction sent successfully:");
     } catch (error) {
-      console.error("Failed to parse data or send transaction:", error)
+      console.error("Failed to parse data or send transaction:", error);
     }
-  }
+  };
 
   return (
     <SmartAccountContext.Provider
@@ -209,6 +271,7 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
         kernelAccountAddress,
         mintErc721,
         createSafeAccount,
+        createBiconomyAccount,
         smartAccountClient,
         generatePrivateKeys,
         importPrivateKeyToAccount,
@@ -218,8 +281,8 @@ export const SmartAccountProvider: React.FC<SmartAccountProviderProps> = ({
     >
       {children}
     </SmartAccountContext.Provider>
-  )
-}
+  );
+};
 
 // Hook
-export const useSmartAccountContext = () => useContext(SmartAccountContext)
+export const useSmartAccountContext = () => useContext(SmartAccountContext);
