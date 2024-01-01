@@ -33,7 +33,7 @@ const QrCodeModal = () => {
 
   const triggerButton = (
     <Button onClick={() => setOpen(true)}>
-      <QrCodeIcon className="mr-2" /> Address QrCode
+      <QrCodeIcon className="mr-2" /> QR-Code
     </Button>
   );
 

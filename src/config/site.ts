@@ -11,8 +11,7 @@ export const siteConfig = {
   ],
   links: {
     twitter: "https://twitter.com/dylansz_",
-    github:
-      "https://github.com/dylanszejnblum/wagmi-Permissionless-starter-kit",
+    github: "https://github.com/dylanszejnblum/permissionless-starter-kit",
     docs: "https://docs.pimlico.io/permissionless",
   },
 };

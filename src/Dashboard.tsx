@@ -42,7 +42,7 @@ const Dashboard = () => {
           </div>
 
           <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-7">
-            <Card className="col-span-4">
+            <Card className="md:col-span-1 lg:col-span-4">
               <CardHeader>
                 <CardTitle>Eoa Setup</CardTitle>
               </CardHeader>
@@ -55,12 +55,13 @@ const Dashboard = () => {
                   >
                     Generate Private Key
                   </Button>
-                  <span className=" font-bold tracking-tight">
+                  <span className="font-bold tracking-tight break-all">
                     Your EOA Address : {Eoa}
                   </span>
-                  <span className=" font-bold tracking-tight">
+                  <span className="font-bold tracking-tight break-all">
                     EOA Private key {privateKey}
                   </span>
+
                   <Input
                     type="text"
                     placeholder="Paste Private key"
@@ -77,7 +78,7 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-            <Card className="col-span-3">
+            <Card className="md:col-span-1 lg:col-span-3">
               <CardHeader>
                 <CardTitle>Faucet</CardTitle>
                 <CardDescription>
@@ -95,6 +96,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
           <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-6">
             <Card className="col-span-3">
               <CardHeader>
@@ -153,7 +155,7 @@ const Dashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col space-y-2">
-                <span className=" font-bold tracking-tight">
+                <span className="font-bold tracking-tight break-all">
                   Account address: {smartAddress}
                 </span>
                 <span className=" font-bold tracking-tight">
